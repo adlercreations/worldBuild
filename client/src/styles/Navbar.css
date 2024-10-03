@@ -1,0 +1,65 @@
+/* Navbar styles */
+.navbar {
+    background-color: #0080ff;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-self: center;
+    align-items: center;
+    width: 100%;  /* Ensure it spans full width */
+    max-width: 800px;  /* Limit the width of the navbar */
+    margin-bottom: -3rem;  /* Add space between navbar and the content below */
+    margin-left: -4rem;
+    border-radius: 8px;
+}
+  
+.navbar ul {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    justify-content: center;
+    align-self: center;
+    align-items: center;
+    align-content: center;
+    background-color: #0080ff;
+    margin: 0;
+    gap: 3rem;
+}
+
+.navbar li {
+    padding: 14px 20px;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+}
+
+/* .navbar ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: center;
+    align-content: center;
+    margin-left: 0rem;
+    gap: 4rem;  /* Space between navbar links */
+/* } */
+  
+.navbar li {
+    display: inline;
+} */
+  
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+  
+.navbar a:hover {
+    color: #f0a500;  /* Change link color on hover */
+    text-decoration-style: dotted;   /* Underline the link on hover */
+}

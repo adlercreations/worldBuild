@@ -8,10 +8,12 @@ flask = "*"
 importlib-metadata = "6.0.0"
 importlib-resources = "5.10.0"
 sqlalchemy = "*"
-flask-migrate = "*"
 flask-restful = "*"
 flask-sqlalchemy = "*"
 flask-cors = "*"
+flask-migrate = "*"
+bcrypt = "*"
+cloudinary = "*"
 
 [requires]
 python_full_version = "3.8.13"
