@@ -56,7 +56,6 @@ migrate = Migrate(app, db)
 api = Api(app)
 CORS(app)
 
-g
 @app.route('/')
 def index():
     return '<h1>WorldBuild API</h1>'
@@ -191,7 +190,7 @@ def add_image_to_portfolio(id):
 
 @app.route('/api/portfolios/<int:id>', methods=['GET'])
 def get_portfolio(id):
-    portfolio = ArtistPortfolio.query.get(id)
+    portfolio = ArtistPortfolio.query.filter_by(id=id).first()
     if not portfolio:
         return jsonify({'error': 'Portfolio not found'}), 404
     return jsonify(portfolio.to_dict()), 200

@@ -11,7 +11,8 @@ function PortfolioDetail() {
         fetch(`http://localhost:5555/api/portfolios/${id}`)
             .then((response) => response.json())
             .then((data) => {
-                if (data && data.artist_name) {
+                console.log('Portfolio data received:', data);
+                if (data) {
                     setPortfolio(data);
                 } else {
                     setErrorMessage('Artist name not found');
@@ -59,7 +60,7 @@ function PortfolioDetail() {
             <h2>
                 {portfolio.artist_name ? `${portfolio.artist_name}'s Portfolio` : 'Artist Portfolio'}
             </h2>
-            <p>{portfolio.bio}</p>
+            <p>{portfolio.bio || 'Bio information not available'}</p>
 
             <div className="portfolio-images">
                 {portfolio.images && portfolio.images.length > 0 ? (
