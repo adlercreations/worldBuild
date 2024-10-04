@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 function PortfolioDetail() {
     const { id } = useParams();
@@ -10,8 +10,17 @@ function PortfolioDetail() {
     useEffect(() => {
         fetch(`http://localhost:5555/api/portfolios/${id}`)
             .then((response) => response.json())
-            .then((data) => setPortfolio(data))
-            .catch((error) => console.error('Error fetching portfolio:', error));
+            .then((data) => {
+                if (data && data.artist_name) {
+                    setPortfolio(data);
+                } else {
+                    setErrorMessage('Artist name not found');
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching portfolio:', error);
+                setErrorMessage('Error fetching portfolio data');
+            });
     }, [id]);
 
     const handleImageUpload = (event) => {
@@ -47,7 +56,9 @@ function PortfolioDetail() {
 
     return (
         <div className="container">
-            <h2>{portfolio.artist_name}'s Portfolio</h2>
+            <h2>
+                {portfolio.artist_name ? `${portfolio.artist_name}'s Portfolio` : 'Artist Portfolio'}
+            </h2>
             <p>{portfolio.bio}</p>
 
             <div className="portfolio-images">
@@ -70,5 +81,3 @@ function PortfolioDetail() {
 }
 
 export default PortfolioDetail;
-            
-    

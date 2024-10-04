@@ -7,9 +7,9 @@
     text-align: center;
     align-self: center;
     align-items: center;
-    width: 100%;  /* Ensure it spans full width */
-    max-width: 800px;  /* Limit the width of the navbar */
-    margin-bottom: -3rem;  /* Add space between navbar and the content below */
+    width: 100%;  
+    max-width: 800px; 
+    margin-bottom: -3rem;  
     margin-left: -4rem;
     border-radius: 8px;
 }
@@ -60,6 +60,6 @@
 }
   
 .navbar a:hover {
-    color: #f0a500;  /* Change link color on hover */
-    text-decoration-style: dotted;   /* Underline the link on hover */
+    color: #f0a500;
+    text-decoration-style: dotted;
 }

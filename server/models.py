@@ -31,13 +31,15 @@ class ArtistPortfolio(db.Model, SerializerMixin):
 
     submissions = db.relationship('ArtistSubmission', back_populates='portfolio', lazy=True)
 
+    serialize_rules = ('-submissions',)
+
 class ProjectSubmission(db.Model, SerializerMixin):
     __tablename__ = 'project_submissions'
 
     id = db.Column(db.Integer, primary_key=True)
     project_title = db.Column(db.String, nullable=False)
     description = db.Column(db.Text, nullable=False)
-    keywords = db.Column(db.String)  # List of keywords/tags (e.g., Fantasy, Sci-Fi)
+    keywords = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     user = db.relationship('User', back_populates='projects')
@@ -58,3 +60,5 @@ class ArtistSubmission(db.Model, SerializerMixin):
     
     portfolio_id = db.Column(db.Integer, db.ForeignKey('artist_portfolios.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project_submissions.id'), nullable=False)
+
+    serialize_rules = ('-portfolio',)

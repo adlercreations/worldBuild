@@ -8,7 +8,7 @@ ReactDOM.render(
     <React.StrictMode>
       <App />
     </React.StrictMode>,
-    document.getElementById('root')  // Make sure this matches the root element in your index.html
+    document.getElementById('root')
   );
 
 // const container = document.getElementById("root");
