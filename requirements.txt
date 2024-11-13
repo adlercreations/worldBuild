@@ -1,0 +1,12 @@
+Flask
+importlib-metadata==6.0.0
+importlib-resources==5.10.0
+SQLAlchemy
+Flask-RESTful
+Flask-SQLAlchemy
+Flask-Cors
+Flask-Migrate
+bcrypt
+cloudinary
+sqlalchemy-serializer
+faker
