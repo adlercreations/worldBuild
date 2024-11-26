@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function UserProfile() {
-    const { currentUser } = useAuth();
+    const { currentUser, logout } = useAuth();
+    const navigate = useNavigate();
     const [portfolio, setPortfolio] = useState(null);
     const [newImage, setNewImage] = useState(null);
     const [caption, setCaption] = useState('');
@@ -52,6 +54,15 @@ function UserProfile() {
         }
     };
 
+    const handleLogout = async () => {
+        try {
+            await logout();
+            navigate('/');
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };
+
     return (
         <div className="container">
             <h2>My Profile</h2>
@@ -60,6 +71,13 @@ function UserProfile() {
                     <div className="profile-info create-form">
                         <h3>{currentUser.username}'s Profile</h3>
                         <p>{currentUser.email}</p>
+                        <button 
+                            onClick={handleLogout} 
+                            className="submit-button"
+                            style={{ marginTop: '1rem' }}
+                        >
+                            Logout
+                        </button>
                     </div>
 
                     <div className="portfolio-section create-form">
