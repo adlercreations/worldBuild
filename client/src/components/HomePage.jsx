@@ -29,18 +29,16 @@ function HomePage() {
   }, []);
 
   return (
-    <div className="home-page container">
+    <div className="home-page">
       <h2>Welcome to WorldBuild</h2>
 
       {/* Display Login and Registration Forms if user is not logged in */}
       {!currentUser ? (
         <div className="auth-forms" style={{ display: 'flex', gap: '2rem', marginBottom: '2rem' }}>
           <div>
-            <h3>Login</h3>
             <Login /> {/* Render the Login component */}
           </div>
           <div>
-            <h3>Create an Account</h3>
             <Register /> {/* Render the Registration component */}
           </div>
         </div>
