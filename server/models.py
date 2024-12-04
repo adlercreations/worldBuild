@@ -5,16 +5,16 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy_serializer import SerializerMixin
 
-class User(db.Model, UserMixin, SerializerMixin):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, nullable=False, unique=True)
-    email = db.Column(db.String, nullable=False, unique=True)
-    password_hash = db.Column(db.String)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
 
-    portfolios = db.relationship('ArtistPortfolio', back_populates='user', lazy=True)
-    projects = db.relationship('ProjectSubmission', back_populates='user', lazy=True)
+    portfolios = db.relationship('ArtistPortfolio', backref='user', lazy=True)
+    projects = db.relationship('ProjectSubmission', backref='user', lazy=True)
 
     serialize_rules = ('-password_hash', '-portfolios.user', '-projects.user')
 
@@ -26,19 +26,19 @@ class User(db.Model, UserMixin, SerializerMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class ArtistPortfolio(db.Model, SerializerMixin):
-    __tablename__ = 'artist_portfolios'
+class ArtistPortfolio(db.Model):
+    __tablename__ = 'portfolios'
 
     id = db.Column(db.Integer, primary_key=True)
-    artist_name = db.Column(db.String, nullable=False)
-    bio = db.Column(db.String)
-    profile_image = db.Column(db.String)  # Link to Cloudinary image
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    image_url = db.Column(db.String(500))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    user = db.relationship('User', back_populates='portfolios')
     submissions = db.relationship('ArtistSubmission', back_populates='portfolio', lazy=True)
-
-    serialize_rules = ('-submissions',)
+    serialize_rules = ('-submissions.portfolio',)
 
 class ProjectSubmission(db.Model, SerializerMixin):
     __tablename__ = 'project_submissions'
@@ -49,22 +49,20 @@ class ProjectSubmission(db.Model, SerializerMixin):
     keywords = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    user = db.relationship('User', back_populates='projects')
     artist_submissions = db.relationship('ArtistSubmission', back_populates='project', lazy=True)
-
-    serialize_rules = ('-artist_submissions',)
+    serialize_rules = ('-artist_submissions.project',)
 
 class ArtistSubmission(db.Model, SerializerMixin):
     __tablename__ = 'artist_submissions'
 
     id = db.Column(db.Integer, primary_key=True)
-    design_url = db.Column(db.String, nullable=False)  # Link to Cloudinary image
+    design_url = db.Column(db.String, nullable=False)
     description = db.Column(db.Text, nullable=False)
+    
+    portfolio_id = db.Column(db.Integer, db.ForeignKey('portfolios.id'), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('project_submissions.id'), nullable=False)
 
     portfolio = db.relationship('ArtistPortfolio', back_populates='submissions', lazy=True)
     project = db.relationship('ProjectSubmission', back_populates='artist_submissions', lazy=True)
     
-    portfolio_id = db.Column(db.Integer, db.ForeignKey('artist_portfolios.id'), nullable=False)
-    project_id = db.Column(db.Integer, db.ForeignKey('project_submissions.id'), nullable=False)
-
-    serialize_rules = ('-portfolio',)
+    serialize_rules = ('-portfolio.submissions', '-project.artist_submissions')

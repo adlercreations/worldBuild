@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ function UserProfile() {
     const [portfolio, setPortfolio] = useState(null);
     const [newImage, setNewImage] = useState(null);
     const [caption, setCaption] = useState('');
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (currentUser) {
@@ -27,30 +28,45 @@ function UserProfile() {
         }
     };
 
-    const handleImageUpload = async (e) => {
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setNewImage(file);
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!newImage) {
+            alert('Please select an image first');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('image', newImage);
         formData.append('caption', caption);
 
         try {
-            const response = await fetch('/api/portfolio/images', {
+            const response = await fetch(`/api/portfolios/user/${currentUser.id}/upload`, {
                 method: 'POST',
-                credentials: 'include',
                 body: formData
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                setPortfolio(prev => ({
-                    ...prev,
-                    images: [...prev.images, data]
-                }));
-                setNewImage(null);
-                setCaption('');
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
             }
+
+            // Reset form and refresh portfolio
+            setNewImage(null);
+            setCaption('');
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            fetchPortfolio();
         } catch (error) {
             console.error('Error uploading image:', error);
+            alert('Failed to upload image. Please try again.');
         }
     };
 
@@ -59,7 +75,7 @@ function UserProfile() {
             await logout();
             navigate('/');
         } catch (error) {
-            console.error('Error logging out:', error);
+            console.error('Logout failed:', error);
         }
     };
 
@@ -68,56 +84,48 @@ function UserProfile() {
             <h2>My Profile</h2>
             {currentUser && (
                 <>
-                    <div className="profile-info create-form">
+                    <div className="profile-info">
                         <h3>{currentUser.username}'s Profile</h3>
                         <p>{currentUser.email}</p>
-                        <button 
-                            onClick={handleLogout} 
-                            className="submit-button"
-                            style={{ marginTop: '1rem' }}
-                        >
-                            Logout
-                        </button>
                     </div>
 
-                    <div className="portfolio-section create-form">
-                        <h3>My Portfolio</h3>
-                        <form onSubmit={handleImageUpload} className="project-form">
+                    <div className="upload-section">
+                        <h3>Add to Portfolio</h3>
+                        <form onSubmit={handleSubmit} className="upload-form">
                             <div className="form-group">
-                                <label htmlFor="image">Select Image:</label>
+                                <label>Choose Image</label>
                                 <input
-                                    id="image"
                                     type="file"
-                                    onChange={(e) => setNewImage(e.target.files[0])}
                                     accept="image/*"
-                                    required
+                                    onChange={handleFileChange}
+                                    ref={fileInputRef}
                                 />
                             </div>
                             <div className="form-group">
-                                <label htmlFor="caption">Image Caption:</label>
+                                <label>Caption</label>
                                 <input
-                                    id="caption"
                                     type="text"
                                     value={caption}
                                     onChange={(e) => setCaption(e.target.value)}
-                                    placeholder="Enter a caption for your image"
-                                    required
+                                    placeholder="Enter image caption"
                                 />
                             </div>
-                            <button type="submit" className="submit-button">
-                                Upload to Portfolio
-                            </button>
+                            <button type="submit">Upload Image</button>
                         </form>
-
-                        <div className="portfolio-grid">
-                            {portfolio?.images?.map(image => (
-                                <div key={image.id} className="portfolio-item">
-                                    <img src={image.url} alt={image.caption} />
-                                    <p>{image.caption}</p>
-                                </div>
-                            ))}
-                        </div>
                     </div>
+
+                    <div className="portfolio-grid">
+                        {portfolio?.images?.map((image, index) => (
+                            <div key={index} className="portfolio-card">
+                                <img src={image.url} alt={image.caption} />
+                                <p>{image.caption}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button onClick={handleLogout} className="logout-button">
+                        Logout
+                    </button>
                 </>
             )}
         </div>
