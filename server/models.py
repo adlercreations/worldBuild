@@ -13,7 +13,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
 
-    portfolios = db.relationship('ArtistPortfolio', backref='user', lazy=True)
+    portfolios = db.relationship('ArtistPortfolio', back_populates='user', lazy=True)
     projects = db.relationship('ProjectSubmission', backref='user', lazy=True)
 
     serialize_rules = ('-password_hash', '-portfolios.user', '-projects.user')
@@ -26,19 +26,46 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-class ArtistPortfolio(db.Model):
-    __tablename__ = 'portfolios'
+class Image(db.Model):
+    __tablename__ = 'images'
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    image_url = db.Column(db.String(500))
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    url = db.Column(db.String, nullable=False)
+    caption = db.Column(db.String)
+    portfolio_id = db.Column(db.Integer, db.ForeignKey('artist_portfolios.id'))
 
+    # Relationships
+    portfolio = db.relationship('ArtistPortfolio', back_populates='images')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'url': self.url,
+            'caption': self.caption,
+            'portfolio_id': self.portfolio_id
+        }
+
+class ArtistPortfolio(db.Model):
+    __tablename__ = 'artist_portfolios'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    bio = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    # Relationships
+    user = db.relationship('User', back_populates='portfolios')
+    images = db.relationship('Image', back_populates='portfolio', cascade='all, delete-orphan')
     submissions = db.relationship('ArtistSubmission', back_populates='portfolio', lazy=True)
-    serialize_rules = ('-submissions.portfolio',)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'artist_name': self.name,
+            'bio': self.bio,
+            'user_id': self.user_id,
+            'images': [image.to_dict() for image in self.images]
+        }
 
 class ProjectSubmission(db.Model, SerializerMixin):
     __tablename__ = 'project_submissions'
@@ -59,7 +86,7 @@ class ArtistSubmission(db.Model, SerializerMixin):
     design_url = db.Column(db.String, nullable=False)
     description = db.Column(db.Text, nullable=False)
     
-    portfolio_id = db.Column(db.Integer, db.ForeignKey('portfolios.id'), nullable=False)
+    portfolio_id = db.Column(db.Integer, db.ForeignKey('artist_portfolios.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project_submissions.id'), nullable=False)
 
     portfolio = db.relationship('ArtistPortfolio', back_populates='submissions', lazy=True)

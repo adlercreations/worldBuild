@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_restful import Api
 from auth import auth_bp
 from config import app, db, api
-from models import User, ArtistPortfolio, ProjectSubmission, ArtistSubmission
+from models import User, ArtistPortfolio, Image, ProjectSubmission, ArtistSubmission
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import cloudinary
@@ -280,6 +280,86 @@ def create_portfolio():
     except Exception as e:
         print(f"Unexpected error: {str(e)}") # Debug log
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/portfolios/user/<int:user_id>/upload', methods=['POST'])
+def upload_user_portfolio_image(user_id):
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file provided'}), 400
+        
+        file = request.files['image']
+        caption = request.form.get('caption', '')
+        
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+            
+        # Upload to Cloudinary
+        upload_result = cloudinary.uploader.upload(file)
+        
+        # Get or create portfolio for user
+        portfolio = ArtistPortfolio.query.filter_by(user_id=user_id).first()
+        if not portfolio:
+            portfolio = ArtistPortfolio(
+                user_id=user_id,
+                name=f"Portfolio {user_id}",
+                bio="My artwork collection"
+            )
+            db.session.add(portfolio)
+            db.session.commit()
+        
+        # Create new image with Cloudinary URL
+        image = Image(
+            url=upload_result['secure_url'],
+            caption=caption,
+            portfolio_id=portfolio.id
+        )
+        db.session.add(image)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Image uploaded successfully',
+            'url': image.url,
+            'caption': image.caption
+        }), 200
+        
+    except Exception as e:
+        print(f"Error during upload: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Add this new route to get a single portfolio by ID
+@app.route('/api/portfolios/<int:portfolio_id>')
+def get_portfolio(portfolio_id):
+    try:
+        portfolio = ArtistPortfolio.query.get(portfolio_id)
+        if not portfolio:
+            return jsonify({"error": "Portfolio not found"}), 404
+            
+        return jsonify(portfolio.to_dict()), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/portfolios/images/<int:image_id>', methods=['DELETE'])
+def delete_portfolio_image(image_id):
+    try:
+        image = Image.query.get(image_id)
+        if not image:
+            return jsonify({'error': 'Image not found'}), 404
+            
+        # Check if the current user owns the portfolio
+        portfolio = ArtistPortfolio.query.get(image.portfolio_id)
+        if not portfolio or portfolio.user_id != current_user.id:
+            return jsonify({'error': 'Unauthorized'}), 403
+            
+        db.session.delete(image)
+        db.session.commit()
+        
+        return jsonify({'message': 'Image deleted successfully'}), 200
+        
+    except Exception as e:
+        print(f"Error deleting image: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 # Run the server
 if __name__ == '__main__':

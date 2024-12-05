@@ -1,82 +1,101 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from './AuthContext';
 
 function PortfolioDetail() {
     const { id } = useParams();
     const [portfolio, setPortfolio] = useState(null);
-    const [newImage, setNewImage] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    const { currentUser } = useAuth();
 
-    useEffect(() => {
-        fetch(`http://localhost:5555/api/portfolios/${id}`)
-            .then((response) => response.json())
-            .then((data) => {
-                console.log('Portfolio data received:', data);
-                if (data) {
-                    setPortfolio(data);
-                } else {
-                    setErrorMessage('Artist name not found');
-                }
-            })
-            .catch((error) => {
-                console.error('Error fetching portfolio:', error);
-                setErrorMessage('Error fetching portfolio data');
-            });
-    }, [id]);
+    const fetchPortfolio = async () => {
+        try {
+            const response = await fetch(`http://localhost:5555/api/portfolios/${id}`);
+            if (!response.ok) {
+                throw new Error('Portfolio not found');
+            }
+            const data = await response.json();
+            console.log('Portfolio data:', data);
+            
+            if (data.images) {
+                data.images = data.images.map((image, index) => ({
+                    ...image,
+                    id: image.id || index + 1
+                }));
+            }
+            
+            setPortfolio(data);
+        } catch (error) {
+            console.error('Error fetching portfolio:', error);
+            setErrorMessage('Error loading portfolio');
+        }
+    };
 
-    const handleImageUpload = (event) => {
-        event.preventDefault();
-        if (!newImage) {
-            setErrorMessage('Please select an image to upload.');
+    const handleDeleteImage = async (imageId) => {
+        if (!imageId) {
+            console.error('No image ID provided');
             return;
         }
+        
+        try {
+            const response = await fetch(`http://localhost:5555/api/portfolios/images/${imageId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        const dataToSubmit = new FormData();
-        dataToSubmit.append('portfolio_id', id);
-        dataToSubmit.append('image', newImage);
+            if (!response.ok) {
+                throw new Error('Failed to delete image');
+            }
 
-        fetch(`http://localhost:5555/api/portfolios/${id}/images`, {
-            method: 'POST',
-            body: dataToSubmit,
-        })
-        .then(response => response.json())
-        .then(data => {
-            setPortfolio(prevState => ({
-                ...prevState,
-                images: [...prevState.images, data.image_url]
-            }));
-            setNewImage(null);
-            setErrorMessage('');
-        })
-        .catch(error => setErrorMessage('Failed to upload image. Please try again.'));
+            fetchPortfolio();
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            alert('Failed to delete image. Please try again.');
+        }
     };
+
+    useEffect(() => {
+        fetchPortfolio();
+    }, [id]);
 
     if (!portfolio) {
         return <div>Loading...</div>;
     }
 
     return (
-        <div className="container">
-            <h2>
-                {portfolio.artist_name ? `${portfolio.artist_name}'s Portfolio` : 'Artist Portfolio'}
-            </h2>
+        <div className="portfolio-detail-container">
+            <h2>{portfolio.artist_name ? `${portfolio.artist_name}'s Portfolio` : 'Artist Portfolio'}</h2>
             <p>{portfolio.bio || 'Bio information not available'}</p>
 
             <div className="portfolio-images">
                 {portfolio.images && portfolio.images.length > 0 ? (
-                    portfolio.images.map((image, index) => (
-                        <img key={index} src={image} alt="Portfolio Artwork" className="portfolio-image" />
-                    ))
+                    portfolio.images.map((image, index) => {
+                        console.log('Image data:', image);
+                        return (
+                            <div key={index} className="portfolio-image-container">
+                                <img src={image.url} alt={image.caption || 'Portfolio Artwork'} />
+                                {image.caption && <p>{image.caption}</p>}
+                                {currentUser && currentUser.id === portfolio.user_id && (
+                                    <button 
+                                        className="delete-button"
+                                        onClick={() => {
+                                            console.log('Deleting image with ID:', image.id);
+                                            handleDeleteImage(image.id);
+                                        }}
+                                    >
+                                        Delete
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    })
                 ) : (
                     <p>No images in this portfolio yet.</p>
                 )}
             </div>
-
-            <form onSubmit={handleImageUpload}>
-                <input type="file" onChange={(event) => setNewImage(event.target.files[0])} />
-                <button type="submit">Add Image</button>
-            </form>
-            {errorMessage && <p className="error">{errorMessage}</p>}
         </div>
     );
 }

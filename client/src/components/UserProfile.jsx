@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Modal from './Modal';
 
 function UserProfile() {
     const { currentUser, logout } = useAuth();
@@ -9,6 +10,7 @@ function UserProfile() {
     const [newImage, setNewImage] = useState(null);
     const [caption, setCaption] = useState('');
     const fileInputRef = useRef(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         if (currentUser) {
@@ -48,22 +50,34 @@ function UserProfile() {
         formData.append('caption', caption);
 
         try {
+            console.log('Sending request with:', {
+                image: newImage,
+                caption: caption
+            });
+
             const response = await fetch(`/api/portfolios/user/${currentUser.id}/upload`, {
                 method: 'POST',
-                body: formData
+                body: formData,
             });
 
             if (!response.ok) {
-                throw new Error('Failed to upload image');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to upload image');
             }
 
-            // Reset form and refresh portfolio
+            const data = await response.json();
+            console.log('Upload successful:', data);
+
+            // Reset form
             setNewImage(null);
             setCaption('');
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
             fetchPortfolio();
+            
+            // Show success modal
+            setShowModal(true);
         } catch (error) {
             console.error('Error uploading image:', error);
             alert('Failed to upload image. Please try again.');
@@ -79,55 +93,84 @@ function UserProfile() {
         }
     };
 
+    const handleDeleteImage = async (imageId) => {
+        try {
+            const response = await fetch(`/api/portfolios/images/${imageId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete image');
+            }
+
+            // Refresh portfolio after deletion
+            fetchPortfolio();
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            alert('Failed to delete image. Please try again.');
+        }
+    };
+
     return (
         <div className="container">
-            <h2>My Profile</h2>
-            {currentUser && (
-                <>
-                    <div className="profile-info">
-                        <h3>{currentUser.username}'s Profile</h3>
-                        <p>{currentUser.email}</p>
-                    </div>
+            <div className="profile-header">
+                <div className="profile-info">
+                    <h3>{currentUser?.username}'s Profile</h3>
+                    <p>{currentUser?.email}</p>
+                </div>
+                <button onClick={handleLogout} className="logout-button">
+                    Logout
+                </button>
+            </div>
 
-                    <div className="upload-section">
-                        <h3>Add to Portfolio</h3>
-                        <form onSubmit={handleSubmit} className="upload-form">
-                            <div className="form-group">
-                                <label>Choose Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                    ref={fileInputRef}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Caption</label>
-                                <input
-                                    type="text"
-                                    value={caption}
-                                    onChange={(e) => setCaption(e.target.value)}
-                                    placeholder="Enter image caption"
-                                />
-                            </div>
-                            <button type="submit">Upload Image</button>
-                        </form>
+            <div className="upload-section">
+                <h3>Add to Portfolio</h3>
+                <form onSubmit={handleSubmit} className="upload-form">
+                    <div className="form-group">
+                        <label>Choose Image</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            ref={fileInputRef}
+                        />
                     </div>
-
-                    <div className="portfolio-grid">
-                        {portfolio?.images?.map((image, index) => (
-                            <div key={index} className="portfolio-card">
-                                <img src={image.url} alt={image.caption} />
-                                <p>{image.caption}</p>
-                            </div>
-                        ))}
+                    <div className="form-group">
+                        <label>Caption</label>
+                        <input
+                            type="text"
+                            value={caption}
+                            onChange={(e) => setCaption(e.target.value)}
+                            placeholder="Enter image caption"
+                        />
                     </div>
+                    <button type="submit">Upload Image</button>
+                </form>
+            </div>
 
-                    <button onClick={handleLogout} className="logout-button">
-                        Logout
-                    </button>
-                </>
-            )}
+            <div className="portfolio-grid">
+                {portfolio?.images?.map((image, index) => (
+                    <div key={index} className="portfolio-card">
+                        <img src={image.url} alt={image.caption} />
+                        <p>{image.caption}</p>
+                        {currentUser && portfolio.user_id === currentUser.id && (
+                            <button 
+                                onClick={() => handleDeleteImage(image.id)}
+                                className="delete-button"
+                            >
+                                Delete
+                            </button>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            <Modal 
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                message="Image uploaded successfully!"
+            />
         </div>
     );
 }

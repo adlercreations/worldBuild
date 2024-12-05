@@ -26,6 +26,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  padding-bottom: 500px;
+  background-color: #242424;
 }
 
 h1 {
