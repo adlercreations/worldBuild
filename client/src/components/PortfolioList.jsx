@@ -98,10 +98,10 @@ function PortfolioList() {
                 </div>
             )}
 
-            <div className="portfolios-grid">
+            <div className="portfolio-list">
                 {portfolios.map(portfolio => (
                     <div key={portfolio.id} className="portfolio-card">
-                        <h3>{portfolio.artist_name}</h3>
+                        <h3>{portfolio.username ? `${portfolio.username}'s Portfolio` : 'Artist Portfolio'}</h3>
                         <div className="portfolio-preview">
                             {portfolio.images?.slice(0, 4).map((image, index) => (
                                 <div key={index} className="preview-image">

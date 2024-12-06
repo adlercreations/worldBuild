@@ -59,11 +59,13 @@ class ArtistPortfolio(db.Model):
     submissions = db.relationship('ArtistSubmission', back_populates='portfolio', lazy=True)
 
     def to_dict(self):
+        user = User.query.get(self.user_id)
         return {
             'id': self.id,
             'artist_name': self.name,
             'bio': self.bio,
             'user_id': self.user_id,
+            'username': user.username if user else None,
             'images': [image.to_dict() for image in self.images]
         }
 

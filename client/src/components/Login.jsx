@@ -20,7 +20,7 @@ function Login() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ email, password })
       });
 
       if (response.ok) {
@@ -69,67 +69,3 @@ function Login() {
 }
 
 export default Login;
-
-
-
-// // Login.jsx
-// import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-
-// function Login() {
-//     const [email, setEmail] = useState('');
-//     const [password, setPassword] = useState('');
-//     const [error, setError] = useState('');
-//     const navigate = useNavigate();
-
-//     const handleLogin = async (e) => {
-//         e.preventDefault();
-
-//         try {
-//             const response = await fetch('/auth/login', {
-//                 method: 'POST',
-//                 headers: { 'Content-Type': 'application/json' },
-//                 body: JSON.stringify({ email, password })
-//             });
-
-//             if (response.ok) {
-//                 const data = await response.json();
-//                 console.log(data.message);
-//                 // Redirect to a protected route or dashboard
-//                 navigate('/dashboard');
-//             } else {
-//                 const errorData = await response.json();
-//                 setError(errorData.error || 'Login failed');
-//             }
-//         } catch (err) {
-//             console.error('Error logging in:', err);
-//             setError('An error occurred. Please try again.');
-//         }
-//     };
-
-//     return (
-//         <div>
-//             <h2>Login</h2>
-//             <form onSubmit={handleLogin}>
-//                 <input
-//                     type="email"
-//                     placeholder="Email"
-//                     value={email}
-//                     onChange={(e) => setEmail(e.target.value)}
-//                     required
-//                 />
-//                 <input
-//                     type="password"
-//                     placeholder="Password"
-//                     value={password}
-//                     onChange={(e) => setPassword(e.target.value)}
-//                     required
-//                 />
-//                 <button type="submit">Login</button>
-//                 {error && <p>{error}</p>}
-//             </form>
-//         </div>
-//     );
-// }
-
-// export default Login;

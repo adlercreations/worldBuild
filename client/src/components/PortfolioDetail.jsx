@@ -67,7 +67,7 @@ function PortfolioDetail() {
 
     return (
         <div className="portfolio-detail-container">
-            <h2>{portfolio.artist_name ? `${portfolio.artist_name}'s Portfolio` : 'Artist Portfolio'}</h2>
+            <h2>{portfolio.username ? `${portfolio.username}'s Portfolio` : 'Artist Portfolio'}</h2>
             <p>{portfolio.bio || 'Bio information not available'}</p>
 
             <div className="portfolio-images">

@@ -50,15 +50,24 @@ function HomePage() {
       <h2>Artist Portfolios</h2>
       <div className="portfolio-list">
         {portfolios.map(portfolio => (
-          <div key={portfolio.id} className="card">
-            <h3>{portfolio.artist_name}</h3>
-            <p>{portfolio.bio}</p>
-            <Link to={`/portfolio/${portfolio.id}`}>View Portfolio</Link>
+          <div key={portfolio.id} className="portfolio-card">
+            <h3>{portfolio.username ? `${portfolio.username}'s Portfolio` : 'Artist Portfolio'}</h3>
+            <div className="portfolio-preview">
+              {portfolio.images?.slice(0, 4).map((image, index) => (
+                <div key={index} className="preview-image">
+                  <img src={image.url} alt={image.caption} />
+                  <p>{image.caption}</p>
+                </div>
+              ))}
+            </div>
+            <Link to={`/portfolios/${portfolio.id}`}>
+              <button className="view-button">View Full Portfolio</button>
+            </Link>
           </div>
         ))}
       </div>
 
-      <h2>Creator Projects</h2>
+      <h2 className="creator-projects-heading">Creator Projects</h2>
       <div className="project-list">
         {projects.map(project => (
           <div key={project.id} className="card">

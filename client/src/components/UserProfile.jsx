@@ -20,11 +20,28 @@ function UserProfile() {
 
     const fetchPortfolio = async () => {
         try {
-            const response = await fetch(`/api/portfolios/user/${currentUser.id}`);
-            if (response.ok) {
-                const data = await response.json();
-                setPortfolio(data);
+            const response = await fetch(`http://localhost:5555/api/portfolios/user/${currentUser.id}`, {
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch portfolio');
             }
+            const data = await response.json();
+            console.log('Portfolio data before transform:', data);
+            
+            // Get the first portfolio since we're getting an array
+            const userPortfolio = data[0];
+            
+            // Transform the image data to include an id if it doesn't exist
+            if (userPortfolio && userPortfolio.images) {
+                userPortfolio.images = userPortfolio.images.map((image, index) => ({
+                    ...image,
+                    id: image.id || index + 1
+                }));
+            }
+            
+            console.log('Portfolio data after transform:', userPortfolio);
+            setPortfolio(userPortfolio);  // Set the single portfolio object
         } catch (error) {
             console.error('Error fetching portfolio:', error);
         }
@@ -149,15 +166,15 @@ function UserProfile() {
                 </form>
             </div>
 
-            <div className="portfolio-grid">
+            <div className="profile-portfolio-images">
                 {portfolio?.images?.map((image, index) => (
-                    <div key={index} className="portfolio-card">
-                        <img src={image.url} alt={image.caption} />
-                        <p>{image.caption}</p>
+                    <div key={index} className="portfolio-image-container">
+                        <img src={image.url} alt={image.caption || 'Portfolio Artwork'} />
+                        {image.caption && <p>{image.caption}</p>}
                         {currentUser && portfolio.user_id === currentUser.id && (
                             <button 
-                                onClick={() => handleDeleteImage(image.id)}
                                 className="delete-button"
+                                onClick={() => handleDeleteImage(image.id)}
                             >
                                 Delete
                             </button>

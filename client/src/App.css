@@ -32,7 +32,6 @@ body, html {
   padding-bottom: 500px;
 }
 .App h2 {
-  margin-top: 0rem;
   margin-left: -4rem;
   font-size: 2rem;
   text-align: center;
@@ -323,7 +322,7 @@ button:hover{
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 30px;
-    width: 100%;
+    width: 60%;
     margin-left: -3rem;
     display: flex;
     flex-direction: column;
@@ -810,6 +809,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     border-radius: 8px;
     margin: 0 0;
     margin-left: -7rem;
+    width: 50%;
 }
 
 .portfolio-grid {
@@ -1024,7 +1024,17 @@ input[type="file"]::-webkit-file-upload-button:hover {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
     padding: 20px;
+    margin-left: 0rem;
     width: 100%;
+}
+
+.profile-portfolio-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    margin-left: -7rem;
+    width: calc(100% + 7rem);
 }
 
 .portfolio-image-container {
@@ -1114,4 +1124,14 @@ textarea {
     margin: 0 auto;
     margin-left: -3rem;
     padding: 20px;
+}
+
+.creator-projects-heading {
+    margin-top: 2rem;
+}
+
+.portfolio-detail-container h2 {
+    text-align: center;
+    margin-right: -4rem;
+    margin-bottom: 1rem;
 }
