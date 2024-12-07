@@ -53,7 +53,7 @@ function ProjectDetail() {
     }
 
     return (
-        <div className='container'>
+        <div className="project-container">
             <h2>{project.project_title}</h2>
             <p>Description: {project.description}</p>
             <div className='project-content'>

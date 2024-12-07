@@ -7,31 +7,34 @@ function CreateProject({ userId }) {
         keywords: ''
     });
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const dataToSubmit = {
-            ...formData,
-            user_id: userId 
-        };
-
-        fetch('http://localhost:5555/api/projects', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(dataToSubmit),
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            console.log('Project created:', data);
-            
-            setFormData({
-                project_title: '',
-                description: '',
-                keywords: ''
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch('http://localhost:5555/api/projects', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    ...newProject,
+                    user_id: currentUser.id
+                })
             });
-        })
-        .catch((error) => console.error('Error creating project:', error));
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Server error response:', errorData);
+                throw new Error(errorData.error || 'Failed to create project');
+            }
+
+            const data = await response.json();
+            setProjects([...projects, data]);
+            setNewProject({ project_title: '', description: '', keywords: '' });
+        } catch (error) {
+            console.error('Error creating project:', error);
+            alert(error.message || 'Failed to create project. Please try again.');
+        }
     };
 
     return (

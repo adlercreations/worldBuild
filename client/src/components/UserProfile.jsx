@@ -131,39 +131,40 @@ function UserProfile() {
 
     return (
         <div className="container">
-            <div className="profile-header">
-                <div className="profile-info">
-                    <h3>{currentUser?.username}'s Profile</h3>
-                    <p>{currentUser?.email}</p>
+            <div className="profile-header-wrapper">
+                <div className="profile-header">
+                    <div className="profile-info">
+                        <h3>{currentUser?.username}'s Profile</h3>
+                        <p>{currentUser?.email}</p>
+                    </div>
+                    <button onClick={handleLogout} className="logout-button">
+                        Logout
+                    </button>
                 </div>
-                <button onClick={handleLogout} className="logout-button">
-                    Logout
-                </button>
-            </div>
-
-            <div className="upload-section">
-                <h3>Add to Portfolio</h3>
-                <form onSubmit={handleSubmit} className="upload-form">
-                    <div className="form-group">
-                        <label>Choose Image</label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            ref={fileInputRef}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Caption</label>
-                        <input
-                            type="text"
-                            value={caption}
-                            onChange={(e) => setCaption(e.target.value)}
-                            placeholder="Enter image caption"
-                        />
-                    </div>
-                    <button type="submit">Upload Image</button>
-                </form>
+                <div className="profile-upload-section">
+                    <h3>Add to Portfolio</h3>
+                    <form onSubmit={handleSubmit} className="upload-form">
+                        <div className="form-group">
+                            <label>Choose Image</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                                ref={fileInputRef}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Caption</label>
+                            <input
+                                type="text"
+                                value={caption}
+                                onChange={(e) => setCaption(e.target.value)}
+                                placeholder="Enter image caption"
+                            />
+                        </div>
+                        <button type="submit">Upload Image</button>
+                    </form>
+                </div>
             </div>
 
             <div className="profile-portfolio-images">

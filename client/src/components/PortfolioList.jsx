@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import Modal from './Modal';
 
 function PortfolioList() {
     const [portfolios, setPortfolios] = useState([]);
@@ -8,6 +9,7 @@ function PortfolioList() {
     const [caption, setCaption] = useState('');
     const { currentUser } = useAuth();
     const fileInputRef = useRef(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         fetchPortfolios();
@@ -61,6 +63,7 @@ function PortfolioList() {
                 fileInputRef.current.value = '';
             }
             fetchPortfolios();
+            setShowModal(true);
         } catch (error) {
             console.error('Error uploading image:', error);
             alert('Failed to upload image. Please try again.');
@@ -116,6 +119,11 @@ function PortfolioList() {
                     </div>
                 ))}
             </div>
+            <Modal 
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                message="Image uploaded successfully!"
+            />
         </div>
     );
 }

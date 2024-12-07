@@ -69,6 +69,32 @@ def get_projects():
     projects = ProjectSubmission.query.all()
     return jsonify([project.to_dict() for project in projects]), 200
 
+@app.route('/api/projects', methods=['POST'])
+def create_project():
+    try:
+        data = request.get_json()
+        new_project = ProjectSubmission(
+            project_title=data['project_title'],
+            description=data['description'],
+            keywords=data.get('keywords'),
+            user_id=data['user_id']
+        )
+        db.session.add(new_project)
+        db.session.commit()
+        
+        # Convert to dictionary before returning
+        project_dict = {
+            'id': new_project.id,
+            'project_title': new_project.project_title,
+            'description': new_project.description,
+            'keywords': new_project.keywords,
+            'user_id': new_project.user_id
+        }
+        return jsonify(project_dict), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/auth/check-session', methods=['GET'])
 def check_session():
     if current_user.is_authenticated:
@@ -358,6 +384,26 @@ def delete_portfolio_image(image_id):
         
     except Exception as e:
         print(f"Error deleting image: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/projects/<int:project_id>', methods=['DELETE'])
+def delete_project(project_id):
+    try:
+        project = ProjectSubmission.query.get(project_id)
+        if not project:
+            return jsonify({'error': 'Project not found'}), 404
+            
+        # Check if the current user owns the project
+        if project.user_id != current_user.id:
+            return jsonify({'error': 'Unauthorized'}), 403
+            
+        db.session.delete(project)
+        db.session.commit()
+        
+        return jsonify({'message': 'Project deleted successfully'}), 200
+        
+    except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 

@@ -3,7 +3,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from './AuthContext';
 
-function Login() {
+function Login({ isHomePage }) {
   const { setCurrentUser } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,9 +38,9 @@ function Login() {
   };
 
   return (
-    <div className="container">
+    <div className={isHomePage ? "home-login-container" : "login-page-container"}>
       <h3>Login</h3>
-      <form onSubmit={handleLogin} className="auth-form">
+      <form onSubmit={handleLogin} className={isHomePage ? "home-auth-form" : "auth-form"}>
         <div className="form-group">
           <label htmlFor="email">Email:</label>
           <input

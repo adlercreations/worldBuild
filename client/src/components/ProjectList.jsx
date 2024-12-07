@@ -30,7 +30,7 @@ function ProjectList() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('/api/projects', {
+            const response = await fetch('http://localhost:5555/api/projects', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -42,18 +42,43 @@ function ProjectList() {
                 })
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                setProjects([...projects, data]);
-                setNewProject({ project_title: '', description: '', keywords: '' });
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Server error response:', errorData);
+                throw new Error(errorData.error || 'Failed to create project');
             }
+
+            const data = await response.json();
+            setProjects([...projects, data]);
+            setNewProject({ project_title: '', description: '', keywords: '' });
         } catch (error) {
             console.error('Error creating project:', error);
+            alert(error.message || 'Failed to create project. Please try again.');
+        }
+    };
+
+    const handleDelete = async (projectId) => {
+        try {
+            const response = await fetch(`http://localhost:5555/api/projects/${projectId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete project');
+            }
+
+            // Remove the deleted project from state
+            setProjects(projects.filter(project => project.id !== projectId));
+        } catch (error) {
+            console.error('Error deleting project:', error);
+            alert('Failed to delete project. Please try again.');
         }
     };
 
     return (
-        <div className="container">
+        <div className="project-container">
             <h2>Projects</h2>
             
             {currentUser && (
@@ -110,9 +135,19 @@ function ProjectList() {
                     <div key={project.id} className="project-card">
                         <h3>{project.project_title}</h3>
                         <p>{project.description}</p>
-                        <Link to={`/projects/${project.id}`}>
-                            <button>View Project</button>
-                        </Link>
+                        <div className="project-card-actions">
+                            <Link to={`/projects/${project.id}`}>
+                                <button>View Project</button>
+                            </Link>
+                            {currentUser && currentUser.id === project.user_id && (
+                                <button 
+                                    onClick={() => handleDelete(project.id)}
+                                    className="delete-button"
+                                >
+                                    Delete Project
+                                </button>
+                            )}
+                        </div>
                     </div>
                 ))}
             </div>

@@ -79,7 +79,7 @@ class ProjectSubmission(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     artist_submissions = db.relationship('ArtistSubmission', back_populates='project', lazy=True)
-    serialize_rules = ('-artist_submissions.project',)
+    serialize_rules = ('-artist_submissions.project', '-user')
 
 class ArtistSubmission(db.Model, SerializerMixin):
     __tablename__ = 'artist_submissions'
