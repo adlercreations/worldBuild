@@ -1,107 +1,115 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom'; 
+import { useAuth } from './AuthContext';
+
 function ProjectDetail() {
-    const { id } = useParams();  
+    const { id } = useParams();
+    const { currentUser } = useAuth();
     const [project, setProject] = useState(null);
-    const [artistSubmission, setArtistSubmission] = useState({
-        design_url: '',
-        description: ''
-    });
-
-    const [newProjectContent, setNewProjectContent] = useState({
+    const [newContent, setNewContent] = useState({
         content_text: '',
-        content_image: null,
+        content_image: null
     });
-
-    const[errorMessage, setErrorMessage] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        // Fetch the project details by ID from the API
         fetch(`http://localhost:5555/api/projects/${id}`)
             .then((response) => response.json())
             .then((data) => setProject(data))
-            .catch((error) => console.error('Error fetching project:', error));
+            .catch((error) => {
+                console.error('Error fetching project:', error);
+                setError('Error loading project');
+            });
     }, [id]);
 
-    const handleArtistSubmit = (event) => {
-        event.preventDefault();
-        console.log('Submitting Artist Submission:', artistSubmission);
-        setArtistSubmission({
-            design_url: '',
-            description: ''
-        });
-    };
-
-    const handleProjectContentSubmit = (event) => {
-        event.preventDefault();
-        const dataToSubmit = new FormData();
-        dataToSubmit.append('content_text', newProjectContent.content_text);
-        if (newProjectContent.content_image) {
-            dataToSubmit.append('content_image', newProjectContent.content_image);
+    const handleContentSubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        
+        if (newContent.content_text) {
+            formData.append('content_text', newContent.content_text);
+        }
+        if (newContent.content_image) {
+            formData.append('content_image', newContent.content_image);
         }
 
-        console.log('Submitting Project Content:', newProjectContent);
+        try {
+            const response = await fetch(`http://localhost:5555/api/projects/${id}/content`, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData
+            });
 
-        setNewProjectContent({
-            content_text: '',
-            content_image: null,
-        })
+            if (!response.ok) throw new Error('Failed to add content');
+            
+            // Refresh project data
+            const updatedProject = await fetch(`http://localhost:5555/api/projects/${id}`)
+                .then(res => res.json());
+            setProject(updatedProject);
+            setNewContent({ content_text: '', content_image: null });
+        } catch (error) {
+            console.error('Error:', error);
+            setError('Error adding content');
+        }
     };
-    
-    if (!project) {
-        return <div>Loading...</div>;
-    }
+
+    if (!project) return <div>Loading...</div>;
 
     return (
-        <div className="project-container">
-            <h2>{project.project_title}</h2>
-            <p>Description: {project.description}</p>
-            <div className='project-content'>
-                <h3>Project Content</h3>
-                {project.content && (
-                    <div>
-                        {project.content.text && <p>{project.content.text}</p>}
-                        {project.content.images && project.content.images.map((image, index) => (
-                            <img key={index} src={image} alt="Project Content" />
+        <div className="project-detail-page">
+            <div className="project-detail-header">
+                <h2>{project.project_title}</h2>
+                <p className="project-detail-description">{project.description}</p>
+            </div>
+            
+            {project.content_text && (
+                <div className="project-detail-content">
+                    <h3>Additional Information</h3>
+                    <p>{project.content_text}</p>
+                </div>
+            )}
+            
+            {project.reference_images && project.reference_images.length > 0 && (
+                <div className="project-detail-images">
+                    <h3>Reference Images</h3>
+                    <div className="project-image-grid">
+                        {project.reference_images.map(image => (
+                            <img 
+                                key={image.id} 
+                                src={`http://localhost:5555${image.image_url}`} 
+                                alt="Reference" 
+                            />
                         ))}
                     </div>
-                )}
-            </div>
-            <div className='creator-content-form'>
-                <h3>Add Content to Project</h3>
-                <form onSubmit={handleProjectContentSubmit}>
-                    <textarea
-                        placeholder="Add text content"
-                        value={newProjectContent.content_text}
-                        onChange={(event) => setNewProjectContent({ ...newProjectContent, content_text: event.target.value })}
-                    />
-                    <input
-                        type="file"
-                        onChange={(event) => setNewProjectContent({ ...newProjectContent, content_image: event.target.files[0] })}
-                    />
-                    <button type="submit">Add Content</button>
-                </form>
-            </div>
-            <div className='artist-submission-form'>
-                <h3>Submit Your Design</h3>
-                <form onSubmit={handleArtistSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Design URL"
-                        value={artistSubmission.design_url}
-                        onChange={(event) => setArtistSubmission({ ...artistSubmission, design_url: event.target.value })}
-                        required
-                    />
-                    <textarea
-                        placeholder="Description of your design"
-                        value={artistSubmission.description}
-                        onChange={(event) => setArtistSubmission({ ...artistSubmission, description: event.target.value })}
-                        required
-                    />
-                    <button type="submit">Submit Design</button>
-                </form>
-            </div>
-            {errorMessage && <p className="error">{errorMessage}</p>}
+                </div>
+            )}
+
+            {currentUser && currentUser.id === project.user_id && (
+                <div className="project-detail-form">
+                    <h3>Add Content</h3>
+                    <form onSubmit={handleContentSubmit}>
+                        <textarea
+                            value={newContent.content_text}
+                            onChange={(e) => setNewContent({
+                                ...newContent,
+                                content_text: e.target.value
+                            })}
+                            placeholder="Add additional information..."
+                        />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setNewContent({
+                                ...newContent,
+                                content_image: e.target.files[0]
+                            })}
+                        />
+                        <button type="submit">Add Content</button>
+                    </form>
+                </div>
+            )}
+            
+            {error && <p className="project-detail-error">{error}</p>}
         </div>
     );
 }

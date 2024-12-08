@@ -9,6 +9,7 @@ import Register from './components/Register';
 import PortfolioList from './components/PortfolioList';
 import PortfolioDetail from './components/PortfolioDetail';
 import ProjectList from './components/ProjectList';
+import ProjectDetail from './components/ProjectDetail'; 
 import UserProfile from './components/UserProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
@@ -45,6 +46,11 @@ function AppContent() {
           <Route path="/projects" element={
             <ProtectedRoute>
               <ProjectList />
+            </ProtectedRoute>
+          } />
+          <Route path="/projects/:id" element={
+            <ProtectedRoute>
+              <ProjectDetail />
             </ProtectedRoute>
           } />
           <Route path="/my-profile" element={

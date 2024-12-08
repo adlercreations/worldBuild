@@ -407,6 +407,13 @@ def delete_project(project_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/projects/<int:id>', methods=['GET'])
+def get_project(id):
+    project = ProjectSubmission.query.get(id)
+    if not project:
+        return {'error': 'Project not found'}, 404
+    return project.to_dict(), 200
+
 # Run the server
 if __name__ == '__main__':
     app.run(port=5555)
