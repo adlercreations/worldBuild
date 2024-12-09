@@ -414,6 +414,11 @@ def get_project(id):
         return {'error': 'Project not found'}, 404
     return project.to_dict(), 200
 
+@app.route('/api/projects/user/<int:user_id>', methods=['GET'])
+def get_user_projects(user_id):
+    projects = ProjectSubmission.query.filter_by(user_id=user_id).all()
+    return jsonify([project.to_dict() for project in projects]), 200
+
 # Run the server
 if __name__ == '__main__':
     app.run(port=5555)

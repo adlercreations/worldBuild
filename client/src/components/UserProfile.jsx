@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Modal from './Modal';
 
 function UserProfile() {
@@ -11,10 +11,12 @@ function UserProfile() {
     const [caption, setCaption] = useState('');
     const fileInputRef = useRef(null);
     const [showModal, setShowModal] = useState(false);
+    const [projects, setProjects] = useState([]);
 
     useEffect(() => {
         if (currentUser) {
             fetchPortfolio();
+            fetchUserProjects();
         }
     }, [currentUser]);
 
@@ -44,6 +46,21 @@ function UserProfile() {
             setPortfolio(userPortfolio);  // Set the single portfolio object
         } catch (error) {
             console.error('Error fetching portfolio:', error);
+        }
+    };
+
+    const fetchUserProjects = async () => {
+        try {
+            const response = await fetch(`/api/projects/user/${currentUser.id}`, {
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch projects');
+            }
+            const data = await response.json();
+            setProjects(data);
+        } catch (error) {
+            console.error('Error fetching projects:', error);
         }
     };
 
@@ -167,21 +184,41 @@ function UserProfile() {
                 </div>
             </div>
 
-            <div className="profile-portfolio-images">
-                {portfolio?.images?.map((image, index) => (
-                    <div key={index} className="portfolio-image-container">
-                        <img src={image.url} alt={image.caption || 'Portfolio Artwork'} />
-                        {image.caption && <p>{image.caption}</p>}
-                        {currentUser && portfolio.user_id === currentUser.id && (
-                            <button 
-                                className="delete-button"
-                                onClick={() => handleDeleteImage(image.id)}
-                            >
-                                Delete
-                            </button>
-                        )}
-                    </div>
-                ))}
+            <div>
+                <h3>My Character Designs</h3>
+                <div className="profile-portfolio-images">
+                    {portfolio?.images?.map((image, index) => (
+                        <div key={index} className="portfolio-image-container">
+                            <img src={image.url} alt={image.caption || 'Portfolio Artwork'} />
+                            {image.caption && <p>{image.caption}</p>}
+                            {currentUser && portfolio.user_id === currentUser.id && (
+                                <button 
+                                    className="delete-button"
+                                    onClick={() => handleDeleteImage(image.id)}
+                                >
+                                    Delete
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="profile-projects">
+                <h3>My Projects</h3>
+                <div className="project-list">
+                    {projects.map(project => (
+                        <div key={project.id} className="card">
+                            <h3>{project.project_title}</h3>
+                            <p>{project.description}</p>
+                            <div className="project-card-actions">
+                                <Link to={`/projects/${project.id}`}>
+                                    <button className="view-button">View Project</button>
+                                </Link>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <Modal 

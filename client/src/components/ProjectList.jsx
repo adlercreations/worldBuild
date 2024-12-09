@@ -81,6 +81,7 @@ function ProjectList() {
         <div className="project-container">
             <h2>Projects</h2>
             
+            {/* Create form only shows when logged in */}
             {currentUser && (
                 <div className="create-form">
                     <h3>Create New Project</h3>
@@ -130,6 +131,7 @@ function ProjectList() {
                 </div>
             )}
 
+            {/* Projects grid always shows */}
             <div className="projects-grid">
                 {projects.map(project => (
                     <div key={project.id} className="project-card">

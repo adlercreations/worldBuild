@@ -13,7 +13,7 @@ function ProjectDetail() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetch(`http://localhost:5555/api/projects/${id}`)
+        fetch(`/api/projects/${id}`)
             .then((response) => response.json())
             .then((data) => setProject(data))
             .catch((error) => {
@@ -34,7 +34,7 @@ function ProjectDetail() {
         }
 
         try {
-            const response = await fetch(`http://localhost:5555/api/projects/${id}/content`, {
+            const response = await fetch(`/api/projects/${id}/content`, {
                 method: 'POST',
                 credentials: 'include',
                 body: formData
@@ -43,7 +43,7 @@ function ProjectDetail() {
             if (!response.ok) throw new Error('Failed to add content');
             
             // Refresh project data
-            const updatedProject = await fetch(`http://localhost:5555/api/projects/${id}`)
+            const updatedProject = await fetch(`/api/projects/${id}`)
                 .then(res => res.json());
             setProject(updatedProject);
             setNewContent({ content_text: '', content_image: null });

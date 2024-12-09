@@ -41,13 +41,9 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/portfolios" element={<PortfolioList />} />
           <Route path="/portfolios/:id" element={<PortfolioDetail />} />
+          <Route path="/projects" element={<ProjectList />} />
           
           {/* Protected routes */}
-          <Route path="/projects" element={
-            <ProtectedRoute>
-              <ProjectList />
-            </ProtectedRoute>
-          } />
           <Route path="/projects/:id" element={
             <ProtectedRoute>
               <ProjectDetail />

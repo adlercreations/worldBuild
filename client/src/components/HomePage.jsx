@@ -5,6 +5,7 @@ import AuthContext from './AuthContext';
 import Login from './Login';
 import Register from './Register'; // New registration form component
 import PortfolioCarousel from './PortfolioCarousel';
+import ProjectCarousel from './ProjectCarousel';
 
 function HomePage() {
   const { currentUser } = useContext(AuthContext); // Access current user from context
@@ -52,15 +53,7 @@ function HomePage() {
       <PortfolioCarousel portfolios={portfolios} />
 
       <h2 className="creator-projects-heading">Creator Projects</h2>
-      <div className="project-list">
-        {projects.map(project => (
-          <div key={project.id} className="card">
-            <h3>{project.project_title}</h3>
-            <p>{project.description.substring(0, 100)}...</p>
-            <Link to={`/projects/${project.id}`}>View Project</Link>
-          </div>
-        ))}
-      </div>
+      <ProjectCarousel projects={projects} />
     </div>
   );
 }
